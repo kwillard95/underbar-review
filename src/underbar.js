@@ -145,6 +145,13 @@
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
+    var result = [];
+
+    _.each(collection, function(item) {
+      result.push(iterator(item));
+    });
+
+    return result;
   };
 
   /*
@@ -185,31 +192,98 @@
   //     return total + number * number;
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
+
+  //if accumulator is undefined, iterator is not invoked until second element with the first element being the accumulator
+  //iterator gets applied to item and that result gets added to acc
+
   _.reduce = function(collection, iterator, accumulator) {
+    if (accumulator === undefined) {
+      accumulator = collection[0];
+      for (var i = 1; i < collection.length; i++) {
+        accumulator = iterator(accumulator, collection[i]);
+      }
+      return accumulator;
+    } else {
+      for (var i = 0; i < collection.length; i++) {
+        accumulator = iterator(accumulator, collection[i]);
+      }
+      return accumulator;
+    }
   };
 
   // Determine if the array or object contains a given value (using `===`).
   _.contains = function(collection, target) {
     // TIP: Many iteration problems can be most easily expressed in
     // terms of reduce(). Here's a freebie to demonstrate!
-    return _.reduce(collection, function(wasFound, item) {
-      if (wasFound) {
-        return true;
-      }
-      return item === target;
-    }, false);
+
+    if (Array.isArray(collection)) {
+      return _.reduce(collection, function(wasFound, item) {
+        if (wasFound) {
+          return true;
+        }
+        return item === target;
+      }, false);
+    } else {
+      collection = Object.values(collection);
+      return _.reduce(collection, function(wasFound, item) {
+        if (wasFound) {
+          return true;
+        }
+        return item === target;
+      }, false);
+    }
   };
 
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
-    // TIP: Try re-using reduce() here.
+    if (!iterator) {
+      iterator = _.identity;
+    }
+    if (Array.isArray(collection)) {
+      return _.reduce(collection, function(wasFound, item) {
+        if (!wasFound) {
+          return false;
+        }
+        return !!(iterator(item));
+      }, true);
+    } else {
+      collection = Object.values(collection);
+      return _.reduce(collection, function(wasFound, item) {
+        if (!wasFound) {
+          return false;
+        }
+        return !!(iterator(item));
+      }, true);
+    }
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
-    // TIP: There's a very clever way to re-use every() here.
+    if (!collection.length) {
+      return false;
+    }
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+    var flipper = function (array) {
+      return _.map(array, function (item) {
+        if (!!iterator(item)) {
+          return false;
+        } else {
+          return true;
+        }
+      });
+    };
+    var flipped = flipper(collection);
+    if (_.every (collection, iterator)) {
+      return true;
+    } else if (_.every (flipped)) {
+      return false;
+    } else {
+      return true;
+    }
   };
 
 
