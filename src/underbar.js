@@ -418,7 +418,7 @@
       var currentEl = copy[i];
       var randomEl = copy[randomIndex];
       copy[i] = randomEl;
-      randomEl = currentEl;
+      copy[randomIndex] = currentEl;
     }
     return copy;
 
